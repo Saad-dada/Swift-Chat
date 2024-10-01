@@ -1,8 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 
-public class CreateChat {
-    private JFrame frame;
+public class CreateChat{
+    public static JFrame frame;
     private JLabel createChatLabel;
 
     private JPanel chatSearchPanel;
@@ -13,6 +15,7 @@ public class CreateChat {
     private JButton addUserButton;
     private JButton createChatButton;
 
+    public static List<String> usernames = new ArrayList<>();
     private JLabel usernameAddedLabel;
 
     CreateChat() {
@@ -61,6 +64,8 @@ public class CreateChat {
         addUserButton.setBounds(10, 110, 140, 40);
         addUserButton.setFont(new Font("Monospaced", Font.BOLD, 20));
         chatSearchPanel.add(addUserButton);
+        
+        usernames.clear();
 
         addUserButton.addActionListener(e -> {
             String username = usernameField.getText();
@@ -68,8 +73,10 @@ public class CreateChat {
                 JOptionPane.showMessageDialog(frame, "Please enter a username", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            CreateChatHandler.addUser(username);
             usernameField.setText("");
-            usernameAddedLabel.setText(usernameAddedLabel.getText() + username + ", ");
+            usernameAddedLabel.setText("Added: " + usernames);
         });
 
         createChatButton = new JButton("Create Chat");
@@ -79,12 +86,15 @@ public class CreateChat {
 
         createChatButton.addActionListener(e -> {
             String chatName = chatNameField.getText();
+            
             if (chatName.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Please enter a chat name", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             chatNameField.setText("");
-            JOptionPane.showMessageDialog(frame, "Chat created successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+           
+            CreateChatHandler.createChat(usernames, chatName);
+
             ChatInterface.chats.add(chatName);
             System.out.println(ChatInterface.chats);
             ChatInterface.chatList.setListData(ChatInterface.chats.toArray(new String[0]));
@@ -92,8 +102,8 @@ public class CreateChat {
         });
 
         usernameAddedLabel = new JLabel();
-        usernameAddedLabel.setBounds(10, 160, 430, 40);
-        usernameAddedLabel.setFont(new Font("Monospaced", Font.BOLD, 20));
+        usernameAddedLabel.setBounds(10, 160, 430, 80);
+        usernameAddedLabel.setFont(new Font("Monospaced", Font.BOLD, 14));
         usernameAddedLabel.setForeground(Color.WHITE);
         chatSearchPanel.add(usernameAddedLabel);
 
