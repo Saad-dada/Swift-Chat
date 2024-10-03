@@ -122,20 +122,16 @@ public class ChatInterface {
             if (selectedChat != null) {
                 String[] users = ChatHandler.getUsersInChat(selectedChat);
                 String createdBy = ChatHandler.getCreatedBy(selectedChat);
-                if (users != null && users.length > 0) { // Check if users are not null and has at least one user
-                    String usersString = String.join(", ", users);
 
-                    String message = "Chat Name: " + selectedChat.toString() + "\nCreated by: " + createdBy
-                            + "\nUsers in this chat: " + usersString;
+                String usersString = String.join(", ", users);
 
-                    JOptionPane.showMessageDialog(null, message, "Chat Info", JOptionPane.INFORMATION_MESSAGE);
+                String message = "Chat Name: " + selectedChat.toString() + "\nCreated by: " + createdBy
+                        + "\nUsers in this chat: " + usersString;
 
-                    System.out.println(message);
+                JOptionPane.showMessageDialog(null, message, "Chat Info", JOptionPane.INFORMATION_MESSAGE);
 
-                } else {
-                    JOptionPane.showMessageDialog(null, "No users found in this chat.", "Chat Info",
-                            JOptionPane.INFORMATION_MESSAGE);
-                }
+                System.out.println(message);
+
             } else {
                 JOptionPane.showMessageDialog(null, "Please select a chat.", "Chat Info",
                         JOptionPane.WARNING_MESSAGE);
