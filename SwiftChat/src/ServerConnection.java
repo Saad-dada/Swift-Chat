@@ -16,9 +16,20 @@ public class ServerConnection {
     }
 
     public static void disconnectFromServer() throws IOException {
-        if (dataInputStream != null) dataInputStream.close();
-        if (dataOutputStream != null) dataOutputStream.close();
-        if (socket != null) socket.close();
+        sendMessage("/disconnect:" + GlobalVariables.username);
+        if (dataInputStream != null)
+            dataInputStream.close();
+        if (dataOutputStream != null)
+            dataOutputStream.close();
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if (socket != null)
+            socket.close();
         System.out.println("Disconnected from server");
     }
 

@@ -11,10 +11,10 @@ public class RegisterHandler {
             int rowsAffected = preparedStatement.executeUpdate();
 
             if (rowsAffected > 0) {
-                System.out.println("Registration successful");
+                System.out.println("Registration successful: " + username);
                 return true;
             } else {
-                System.out.println("Registration failed");
+                System.out.println("Registration failed: " + username);
                 return false;
             }
 

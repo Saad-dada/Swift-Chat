@@ -1,37 +1,64 @@
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicScrollBarUI;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.Style;
+
 import java.awt.*;
+import java.io.IOException;
+
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatInterface {
     public static JFrame frame;
 
     private JPanel chatMenu;
-    
-    private JLabel chatLabel;
-    private JScrollPane chatListScrollPane;
+
+    protected static JLabel chatLabel;
+    protected static JScrollPane chatListScrollPane;
     public static JList<String> chatList;
     public static List<String> chats = new ArrayList<>();
-    
-    private JPanel chatArea;
-    private JLabel chatNameLabel;
+
+    public static Map<String, String[]> chatHashmap = new HashMap<>();
+
+    protected static JPanel chatArea;
+    public static JLabel chatNameLabel;
     private JScrollPane chatScrollPane;
-    private JTextArea chatTextArea;
+    protected static JTextPane chatTextArea;
     private JScrollPane chatInputScrollPane;
     private JTextArea chatInputArea;
     private JButton attachFileButton;
     private JButton sendButton;
 
-    private JButton chatInfoButton;
-    private JButton createChatButton;
+    protected static JButton chatInfoButton;
+    protected static JButton createChatButton;
+
+    protected static StyledDocument doc;
+    protected static Style senderStyle;
+    protected static Style messageStyle;
+    protected static Style timeStyle;
 
     public ChatInterface() {
         frame = new JFrame("Chat Application" + " - " + GlobalVariables.username);
         frame.setSize(1280, 720);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                try {
+                    ServerConnection.disconnectFromServer();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                frame.dispose();
+            }
+        });
         frame.getContentPane().setBackground(GlobalVariables.SECONDARY_COLOR);
         frame.setResizable(false);
         frame.setLayout(null);
@@ -69,10 +96,11 @@ public class ChatInterface {
         chatListScrollPane.setBounds(10, 60, 288, 600);
         chatMenu.add(chatListScrollPane);
 
-        chatList = new JList<String>(chats.toArray(new String[0]));
+        chatList = new JList<>(chats.toArray(new String[0]));
         chatList.setFont(new Font("Monospaced", Font.BOLD, 20));
         chatList.setCellRenderer(new CustomCellRenderer());
         chatList.setFixedCellHeight(60);
+        chatList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         chatListScrollPane.setViewportView(chatList);
         chatListScrollPane.getVerticalScrollBar().setUI(new CustomScrollBarUI());
 
@@ -90,17 +118,51 @@ public class ChatInterface {
         chatArea.add(chatInfoButton);
 
         chatInfoButton.addActionListener(e -> {
-            String chatName = chatNameLabel.getText();
-            String usersInChat[] = {"User1", "User2", "User3", "User4", "User5", "User6", "User7", "User8", "User9", "User10"};
-            String chatInfo = "Chat Name: " + chatName + "\nUsers: " + String.join(", ", usersInChat);
-            JOptionPane.showMessageDialog(null, chatInfo, "Info", JOptionPane.INFORMATION_MESSAGE);
+            String selectedChat = chatList.getSelectedValue();
+            if (selectedChat != null) {
+                String[] users = chatHashmap.get(selectedChat);
+                if (users != null && users.length > 0) { // Check if users are not null and has at least one user
+                    String usersString = String.join(", ", users);
+
+                    String message = "Chat Name: " + selectedChat.toString() + "\nCreated by: " + users[0]
+                            + "\nUsers in this chat: " + usersString;
+
+                    JOptionPane.showMessageDialog(null, message, "Chat Info", JOptionPane.INFORMATION_MESSAGE);
+
+                    System.out.println(message);
+
+                } else {
+                    JOptionPane.showMessageDialog(null, "No users found in this chat.", "Chat Info",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select a chat.", "Chat Info",
+                        JOptionPane.WARNING_MESSAGE);
+            }
         });
 
         chatScrollPane = new JScrollPane();
         chatScrollPane.setBounds(10, 60, 920, 500);
+        chatScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         chatArea.add(chatScrollPane);
 
-        chatTextArea = new JTextArea();
+        chatTextArea = new JTextPane();
+        chatTextArea.setPreferredSize(new Dimension(920, 500));
+        chatTextArea.setContentType("text/plain");
+
+        doc = chatTextArea.getStyledDocument();
+
+        senderStyle = chatTextArea.addStyle("SenderStyle", null);
+        StyleConstants.setBold(senderStyle, true);
+        StyleConstants.setForeground(senderStyle, Color.BLUE);
+
+        messageStyle = chatTextArea.addStyle("MessageStyle", null);
+        StyleConstants.setForeground(messageStyle, Color.BLACK);
+
+        timeStyle = chatTextArea.addStyle("TimeStyle", null);
+        StyleConstants.setItalic(timeStyle, true);
+        StyleConstants.setForeground(timeStyle, Color.GRAY);
+
         chatTextArea.setFont(new Font("Monospaced", Font.PLAIN, 20));
         chatTextArea.setEditable(false);
         chatScrollPane.setViewportView(chatTextArea);
@@ -128,7 +190,7 @@ public class ChatInterface {
                 JOptionPane.showMessageDialog(null, "File attached", "Success", JOptionPane.INFORMATION_MESSAGE);
             }
         });
-        
+
         sendButton = new JButton("Send");
         sendButton.setBounds(830, 570, 100, 60);
         sendButton.setBackground(GlobalVariables.SECONDARY_COLOR);
@@ -139,14 +201,10 @@ public class ChatInterface {
         sendButton.addActionListener(e -> {
             String chatInput = chatInputArea.getText();
             if (!chatInput.isEmpty()) {
-                chatTextArea.append(chatInput + "\n");
+                ChatHandler.sendMessage(chatInput, chatList.getSelectedValue());
                 chatInputArea.setText("");
             }
         });
-
-        chatArea.setVisible(false);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
 
         chatList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -156,25 +214,38 @@ public class ChatInterface {
                     if (selectedChat != null) {
                         chatNameLabel.setText(selectedChat);
                         chatArea.setVisible(true);
+                        chatTextArea.setText("");
+                        new Thread(() -> ChatHandler.syncChat(selectedChat)).start();
                     }
                 }
             }
         });
+
+        chatList.setSelectedIndex(-1);
+
+        chatArea.setVisible(false);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 
     static class CustomCellRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             label.setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createLineBorder(Color.GRAY, 1),
-                    BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            ));
+                    BorderFactory.createEmptyBorder(10, 10, 10, 10)));
             label.setPreferredSize(new Dimension(100, 60));
             label.setOpaque(true);
             label.setBackground(isSelected ? Color.LIGHT_GRAY : Color.WHITE);
             return label;
         }
+    }
+
+    public static void addChat(String chatName, String[] users) {
+        chatHashmap.put(chatName, users);
+        System.out.println(chatName + ": " + Arrays.toString(users));
     }
 
     static class CustomScrollBarUI extends BasicScrollBarUI {

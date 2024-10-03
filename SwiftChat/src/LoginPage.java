@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Font;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -9,10 +10,9 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
-
 public class LoginPage {
     public static JFrame frame;
-    
+
     protected static JPanel registerPanel;
     private JLabel registerLabel;
     private JLabel usernameRegLabel;
@@ -23,8 +23,8 @@ public class LoginPage {
     private JPasswordField confirmPasswordField;
     private JButton registerRegButton;
     private JButton loginRegButton;
-    private JLabel errorRegLabel;
-    
+    public static JLabel errorRegLabel;
+
     protected static JPanel loginPanel;
     private JLabel loginLabel;
     private JLabel usernameLabel;
@@ -33,11 +33,22 @@ public class LoginPage {
     private JPasswordField passwordField;
     private JButton loginButton;
     private JButton registerButton;
-    private JLabel errorLabel;
+    public static JLabel errorLabel;
 
     LoginPage() {
         frame = new JFrame("Login Page");
         frame.setSize(1280, 720);
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                try {
+                    ServerConnection.disconnectFromServer();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                frame.dispose();
+            }
+        });
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().setBackground(GlobalVariables.SECONDARY_COLOR);
         frame.setResizable(false);
@@ -106,7 +117,11 @@ public class LoginPage {
         loginButton.addActionListener(e -> {
             String username = usernameField.getText();
             String password = new String(passwordField.getPassword());
-            LoginHandler.login(username, password, errorLabel);
+
+            new Thread(() -> {
+                LoginHandler.login(username, password, errorLabel);
+            }).start();
+
         });
 
         registerPanel = new JPanel();

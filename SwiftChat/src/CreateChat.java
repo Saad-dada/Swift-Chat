@@ -1,10 +1,11 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class CreateChat{
-    public static JFrame frame;
+public class CreateChat {
+    protected static JFrame frame;
     private JLabel createChatLabel;
 
     private JPanel chatSearchPanel;
@@ -15,8 +16,9 @@ public class CreateChat{
     private JButton addUserButton;
     private JButton createChatButton;
 
-    public static List<String> usernames = new ArrayList<>();
-    private JLabel usernameAddedLabel;
+    // Declare usernames at the class level to maintain state
+    protected static List<String> usernames = new ArrayList<>();
+    protected static JLabel usernameAddedLabel;
 
     CreateChat() {
         frame = new JFrame("Create Chat");
@@ -25,6 +27,8 @@ public class CreateChat{
         frame.getContentPane().setBackground(GlobalVariables.SECONDARY_COLOR);
         frame.setResizable(false);
         frame.setLayout(null);
+
+        usernames.clear();
 
         createChatLabel = new JLabel("Create Chat");
         createChatLabel.setBounds(160, 10, 160, 40);
@@ -54,7 +58,7 @@ public class CreateChat{
         chatName.setFont(new Font("Monospaced", Font.BOLD, 20));
         chatName.setForeground(Color.WHITE);
         chatSearchPanel.add(chatName);
-        
+
         chatNameField = new JTextField();
         chatNameField.setBounds(140, 60, 300, 40);
         chatNameField.setFont(new Font("Monospaced", Font.PLAIN, 20));
@@ -64,19 +68,21 @@ public class CreateChat{
         addUserButton.setBounds(10, 110, 140, 40);
         addUserButton.setFont(new Font("Monospaced", Font.BOLD, 20));
         chatSearchPanel.add(addUserButton);
-        
-        usernames.clear();
+
+        usernameAddedLabel = new JLabel();
+        usernameAddedLabel.setBounds(10, 160, 430, 80);
+        usernameAddedLabel.setFont(new Font("Monospaced", Font.BOLD, 14));
+        usernameAddedLabel.setForeground(Color.WHITE);
+        chatSearchPanel.add(usernameAddedLabel);
 
         addUserButton.addActionListener(e -> {
-            String username = usernameField.getText();
-            if (username.isEmpty()) {
+            if (usernameField.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Please enter a username", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            CreateChatHandler.addUser(usernameField.getText());
 
-            CreateChatHandler.addUser(username);
             usernameField.setText("");
-            usernameAddedLabel.setText("Added: " + usernames);
         });
 
         createChatButton = new JButton("Create Chat");
@@ -86,26 +92,25 @@ public class CreateChat{
 
         createChatButton.addActionListener(e -> {
             String chatName = chatNameField.getText();
-            
+
             if (chatName.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Please enter a chat name", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            chatNameField.setText("");
-           
-            CreateChatHandler.createChat(usernames, chatName);
 
-            ChatInterface.chats.add(chatName);
-            System.out.println(ChatInterface.chats);
-            ChatInterface.chatList.setListData(ChatInterface.chats.toArray(new String[0]));
-            frame.dispose();
+            if (usernames.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Please add at least one user", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            List<String> usernameList = new ArrayList<>(Arrays.asList(usernames.toArray(new String[0])));
+
+            new Thread(() -> {
+                CreateChatHandler.createChat(usernameList, chatName);
+            }).start();
+
         });
-
-        usernameAddedLabel = new JLabel();
-        usernameAddedLabel.setBounds(10, 160, 430, 80);
-        usernameAddedLabel.setFont(new Font("Monospaced", Font.BOLD, 14));
-        usernameAddedLabel.setForeground(Color.WHITE);
-        chatSearchPanel.add(usernameAddedLabel);
 
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
