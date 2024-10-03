@@ -4,7 +4,7 @@ import java.io.IOException;
 public class App {
     public static void main(String[] args) {
         try {
-            ServerConnection.connectToServer("localhost", 5000);
+            ServerConnection.connectToServer("23.ip.gl.ply.gg", 4869);
 
             new Thread() {
                 public void run() {

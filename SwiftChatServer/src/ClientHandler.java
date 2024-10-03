@@ -42,6 +42,8 @@ public class ClientHandler extends Thread {
                     handleCreateChat(message);
                 } else if (message.startsWith("/getUsersInChat:")) {
                     handleGetUsersInChat(message);
+                } else if (message.startsWith("/getCreatedBy:")) {
+                    handleGetCreatedBy(message);
                 } else if (message.startsWith("/getChatHistory:")) {
                     handleGetChatHistory(message);
                 } else if (message.startsWith("/userExist:")) {
@@ -53,6 +55,22 @@ public class ClientHandler extends Thread {
             e.printStackTrace();
         } finally {
             closeResources();
+        }
+    }
+
+    private void handleGetCreatedBy(String message) {
+        String[] parts = message.split(":");
+        String chatRoom = parts[1];
+
+        String createdBy = ChatHandler.getCreatedBy(chatRoom);
+        try {
+            if (createdBy != null && !createdBy.isEmpty()) {
+                dataOutputStream.writeUTF("/createdBy:" + chatRoom + ":" + createdBy);
+            } else {
+                dataOutputStream.writeUTF("No creator found");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -159,12 +177,12 @@ public class ClientHandler extends Thread {
         String[] chatData = message.split(":");
         String usernameListString = chatData[1].replace("[", "").replace("]", "").replace(" ", "");
         String chatName = chatData[2];
-        String createdBy = chatData[3];
+
         List<String> usernameList = Arrays.asList(usernameListString.split(","));
 
-        if (CreateChatHandler.createChat(chatName, usernameList, createdBy)) {
+        if (CreateChatHandler.createChat(chatName, usernameList, ChatHandler.getCreatedBy(chatName))) {
             dataOutputStream.writeUTF("/chat_created:" + chatName);
-            System.out.println("Chat created: " + chatName);
+            System.out.println("Chat created: " + chatName + " : " + usernameList);
         } else {
             dataOutputStream.writeUTF("Chat creation failed");
         }
@@ -175,9 +193,10 @@ public class ClientHandler extends Thread {
         String[] chatData = message.split(":");
         String chatName = chatData[1];
         String username = chatData[2];
+        String createdBy = ChatHandler.getCreatedBy(chatName);
 
         List<String> userList = ChatHandler.getUsersInChat(chatName);
-        String messageToSend = "/usersInChat:" + chatName + ":" + userList.toString();
+        String messageToSend = "/usersInChat:" + chatName + ":" + userList.toString() + ":" + createdBy;
         sendToUser(username, messageToSend);
         System.out.println(messageToSend);
     }

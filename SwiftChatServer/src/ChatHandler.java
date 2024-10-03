@@ -126,4 +126,27 @@ public class ChatHandler {
         return chatHistory.toString();
     }
 
+    public static String getCreatedBy(String chatName) {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            int roomId = CreateChatHandler.getRoomId(chatName);
+            if (roomId == -1) {
+                throw new Exception("Room not found");
+            }
+
+            String query = "SELECT username FROM users WHERE user_id = (SELECT created_by FROM chat_rooms WHERE room_id = ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setInt(1, roomId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return resultSet.getString("username");
+            } else {
+                return "User not found";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "An unexpected error occurred.";
+        }
+    }
+
 }
