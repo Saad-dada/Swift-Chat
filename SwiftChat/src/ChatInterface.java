@@ -120,11 +120,12 @@ public class ChatInterface {
         chatInfoButton.addActionListener(e -> {
             String selectedChat = chatList.getSelectedValue();
             if (selectedChat != null) {
-                String[] users = chatHashmap.get(selectedChat);
+                String[] users = ChatHandler.getUsersInChat(selectedChat);
+                String createdBy = ChatHandler.getCreatedBy(selectedChat);
                 if (users != null && users.length > 0) { // Check if users are not null and has at least one user
                     String usersString = String.join(", ", users);
 
-                    String message = "Chat Name: " + selectedChat.toString() + "\nCreated by: " + users[0]
+                    String message = "Chat Name: " + selectedChat.toString() + "\nCreated by: " + createdBy
                             + "\nUsers in this chat: " + usersString;
 
                     JOptionPane.showMessageDialog(null, message, "Chat Info", JOptionPane.INFORMATION_MESSAGE);

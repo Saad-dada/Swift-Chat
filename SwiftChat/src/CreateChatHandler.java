@@ -5,8 +5,9 @@ import javax.swing.JOptionPane;
 public class CreateChatHandler extends CreateChat {
     public static void createChat(List<String> usernames, String chatName) {
         try {
-            List<String> usernameList = usernames;
             String createdBy = GlobalVariables.username;
+            System.out.println("Usernames: " + usernames);
+            List<String> usernameList = usernames;
             ServerConnection.sendMessage("/createChat:" + usernameList + ":" + chatName + ":" + createdBy);
 
             if (GlobalVariables.serverMessage.equals("/chat_created:" + chatName)) {

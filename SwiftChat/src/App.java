@@ -108,7 +108,13 @@ public class App {
                 .split(",");
 
         for (String chatName : chatsName) {
-            ChatHandler.updateChatInterface(chatName, ChatHandler.getUsersInChat(chatName));
+            String usernames[] = ChatHandler.getUsersInChat(chatName);
+
+            if (usernames.length == 0) {
+                System.out.println("No users in chat: " + chatName);
+            }
+
+            ChatHandler.updateChatInterface(chatName, usernames);
         }
     }
 

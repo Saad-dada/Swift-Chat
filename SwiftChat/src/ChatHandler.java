@@ -36,7 +36,7 @@ public class ChatHandler extends ChatInterface {
 
     public static String[] getUsersInChat(String chatName) {
         try {
-            ServerConnection.sendMessage("/getUsersInChat:" + chatName);
+            ServerConnection.sendMessage("/getUsersInChat:" + chatName + ":" + GlobalVariables.username);
 
             try {
                 Thread.sleep(200);
@@ -44,9 +44,7 @@ public class ChatHandler extends ChatInterface {
                 e.printStackTrace();
             }
 
-            if (GlobalVariables.serverMessage.equals("No users found")) {
-                return new String[0];
-            } else if (GlobalVariables.serverMessage.startsWith("/usersInChat:")) {
+            if (GlobalVariables.serverMessage.startsWith("/usersInChat:")) {
                 String[] parts = GlobalVariables.serverMessage.split(":");
                 String _chatName = parts[1];
 
@@ -59,8 +57,9 @@ public class ChatHandler extends ChatInterface {
                 return users;
             }
 
+            System.out.println("Users in chat: ");
             return new String[0];
-            
+
         } catch (IOException e) {
             e.printStackTrace();
             return new String[0];
@@ -112,5 +111,33 @@ public class ChatHandler extends ChatInterface {
     private static void scrollToBottom() {
         JScrollBar vertical = ((JScrollPane) ChatInterface.chatTextArea.getParent().getParent()).getVerticalScrollBar();
         vertical.setValue(vertical.getMaximum());
+    }
+
+    public static String getCreatedBy(String selectedChat) {
+        try {
+            ServerConnection.sendMessage("/getCreatedBy:" + selectedChat);
+
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if (GlobalVariables.serverMessage.startsWith("/createdBy:")) {
+                String[] parts = GlobalVariables.serverMessage.split(":");
+                String chatName = parts[1];
+                String createdBy = parts[2];
+
+                System.out.println("Chat: " + chatName + " created by: " + createdBy);
+
+                return createdBy;
+            }
+
+            return null;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
