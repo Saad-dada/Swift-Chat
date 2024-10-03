@@ -177,10 +177,11 @@ public class ClientHandler extends Thread {
         String[] chatData = message.split(":");
         String usernameListString = chatData[1].replace("[", "").replace("]", "").replace(" ", "");
         String chatName = chatData[2];
+        String createdBy = chatData[3];
 
         List<String> usernameList = Arrays.asList(usernameListString.split(","));
 
-        if (CreateChatHandler.createChat(chatName, usernameList, ChatHandler.getCreatedBy(chatName))) {
+        if (CreateChatHandler.createChat(chatName, usernameList, createdBy)) {
             dataOutputStream.writeUTF("/chat_created:" + chatName);
             System.out.println("Chat created: " + chatName + " : " + usernameList);
         } else {
