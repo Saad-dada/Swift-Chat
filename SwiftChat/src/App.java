@@ -141,7 +141,7 @@ public class App {
 
             String time = messageParts[0] + " " + messageParts[1] + ":" + messageParts[2];
             String sender = messageParts[3].replace(" ", "");
-            String chatData = messageParts[4].replace(" ", "");
+            String chatData = messageParts[4];
 
             ChatHandler.updateChatArea(chatName, chatData, sender, time);
         }
