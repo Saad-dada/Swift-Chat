@@ -33,7 +33,6 @@ public class ChatInterface {
     protected static JTextPane chatTextArea;
     private JScrollPane chatInputScrollPane;
     private JTextArea chatInputArea;
-    private JButton attachFileButton;
     private JButton sendButton;
 
     protected static JButton chatInfoButton;
@@ -165,28 +164,13 @@ public class ChatInterface {
         chatScrollPane.setViewportView(chatTextArea);
 
         chatInputScrollPane = new JScrollPane();
-        chatInputScrollPane.setBounds(10, 570, 630, 60);
+        chatInputScrollPane.setBounds(10, 570, 820, 60);
         chatArea.add(chatInputScrollPane);
         chatInputScrollPane.getHorizontalScrollBar().setUI(new CustomScrollBarUI());
 
         chatInputArea = new JTextArea();
         chatInputArea.setFont(new Font("Monospaced", Font.PLAIN, 20));
         chatInputScrollPane.setViewportView(chatInputArea);
-
-        attachFileButton = new JButton("Attach File");
-        attachFileButton.setBounds(650, 570, 170, 60);
-        attachFileButton.setBackground(GlobalVariables.SECONDARY_COLOR);
-        attachFileButton.setForeground(Color.WHITE);
-        attachFileButton.setFont(new Font("Monospaced", Font.BOLD, 20));
-        chatArea.add(attachFileButton);
-
-        attachFileButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-            int returnValue = fileChooser.showOpenDialog(null);
-            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                JOptionPane.showMessageDialog(null, "File attached", "Success", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
 
         sendButton = new JButton("Send");
         sendButton.setBounds(830, 570, 100, 60);

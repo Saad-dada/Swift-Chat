@@ -18,6 +18,7 @@ public class CreateChatHandler extends CreateChat {
                 JOptionPane.showMessageDialog(null, "Chat not created", "Error", JOptionPane.ERROR_MESSAGE);
             }
             CreateChat.frame.dispose();
+            usernames.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,10 +44,10 @@ public class CreateChatHandler extends CreateChat {
                 e.printStackTrace();
             }
             if (GlobalVariables.serverMessage.equals("User added: " + username)) {
-                usernames.clear();
-                usernames.add(GlobalVariables.username);
+                if (CreateChat.usernames.size() == 0) {
+                    usernames.add(GlobalVariables.username);
+                }
                 usernames.add(username);
-
                 System.out.println("Usernames: " + usernames);
 
                 usernameAddedLabel.setText("Added Users: " + usernames);
